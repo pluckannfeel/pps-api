@@ -1,0 +1,70 @@
+from ctypes import Union
+from typing import Type
+from passlib.context import CryptContext
+import jwt
+from dotenv import dotenv_values
+
+# FastAPI
+from fastapi import HTTPException, status
+
+# models
+from models.user import User
+
+# config_credentials
+env_credentials = dotenv_values('.env')
+
+# password hash context
+password_hash_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+
+
+def hash_password(password: str) -> str:
+    return password_hash_context.hash(password)
+
+
+def verify_password(input_password: str, hashed_password: str) -> str:
+    return password_hash_context.verify(input_password, hashed_password)
+
+
+async def verify_token(token: str):
+    try:
+        payload = jwt.decode(
+            token, env_credentials["SECRET_KEY"], algorithms="HS256")
+        user = await User.get(id=payload.get("id"))
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+        
+    return user
+
+
+async def verify_password(input_password: str, hashed_password: str) -> str:
+    return password_hash_context.verify(input_password, hashed_password)
+
+
+async def authenticate_user(username: str, password: str):
+    user = await User.get(username=username)
+    if user and verify_password(password, user.password):
+        return user
+
+    return False
+
+
+async def token_generator(username: str, password: str) -> str:
+    user = await authenticate_user(username, password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate:": "Bearer"}
+        )
+
+    token_data = {
+        "id": user.id,
+        "username": user.username
+    }
+
+    token = jwt.encode(token_data, env_credentials["SECRET_KEY"])
+    return token

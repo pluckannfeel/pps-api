@@ -17,22 +17,22 @@ class User(Model):
     is_verified = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     modified_at = fields.DatetimeField(auto_now=True)
-    
+
     @staticmethod
     def get_full_name(self) -> str:
         return self.first_name + ' ' + self.last_name
-    
+
     def __str__(self):
         return self.first_name + ' ' + self.last_name
-    
+
     class Meta:
         table = "users"
         ordering = ["created_at"]
-    
+
+
 user_pydantic = pydantic_model_creator(
     User, name="User", exclude=("is_verified",)
 )
-
 userIn_pydantic = pydantic_model_creator(
     User, name="UserIn", exclude_readonly=True, exclude=("is_verified",)
 )
