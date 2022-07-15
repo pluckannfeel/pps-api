@@ -12,6 +12,8 @@ passlib = "*"
 bcrypt = "*"
 jwt = "*"
 pyjwt = "*"
+pip = "*"
+python-multipart = "*"
 
 [dev-packages]
 
