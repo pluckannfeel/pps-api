@@ -35,6 +35,9 @@ oauth_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # static file setup config
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# db
+initialize_db(app)
+
 # ROUTERS
 app.include_router(userRouter)
 
@@ -54,7 +57,7 @@ app.add_middleware(CORSMiddleware,
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     # writes to log.txt
-    file = open('test.log', 'a+')
+    file = open('api.log', 'a+')
     
     idem = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
     logger.info(f"rid={idem} start request path={request.url.path}")
@@ -78,11 +81,8 @@ async def log_requests(request: Request, call_next):
 def index() -> str:
     return {"msg": "hello world! this is the start"}
 
-
-initialize_db(app)
-
-# if __name__ == "__main__":
-# database
+# if __name__ == '__main__':
+#     uvicorn.run(app, host=settings.HOST, port=settings.PORT)
 
 # ASGI
 # uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
