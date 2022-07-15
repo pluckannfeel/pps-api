@@ -1,11 +1,14 @@
 from ctypes import Union
+import email
 from typing import Type
+from unicodedata import name
 from passlib.context import CryptContext
 import jwt
 from dotenv import dotenv_values
 
 # FastAPI
 from fastapi import HTTPException, status
+from tortoise.expressions import Q
 
 # models
 from models.user import User
@@ -36,7 +39,7 @@ async def verify_token(token: str):
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"}
         )
-        
+
     return user
 
 
@@ -44,16 +47,18 @@ async def verify_password(input_password: str, hashed_password: str) -> str:
     return password_hash_context.verify(input_password, hashed_password)
 
 
-async def authenticate_user(username: str, password: str):
-    user = await User.get(username=username)
-    if user and verify_password(password, user.password):
+async def authenticate_user(username_or_email: str, password_hash: str):
+    user = await User.get(Q(username=username_or_email) | Q(email=username_or_email))
+    print(authenticate_user)
+    if user and verify_password(password_hash, user.password_hash):
         return user
 
     return False
 
 
-async def token_generator(username: str, password: str) -> str:
-    user = await authenticate_user(username, password)
+#password is actually password_hash in models
+async def token_generator(username_or_email: str, password: str) -> str:
+    user = await authenticate_user(username_or_email, password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
