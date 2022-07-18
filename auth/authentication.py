@@ -1,5 +1,6 @@
 from ctypes import Union
 import email
+import json
 from typing import Type
 from unicodedata import name
 from passlib.context import CryptContext
@@ -12,6 +13,9 @@ from tortoise.expressions import Q
 
 # models
 from models.user import User
+
+# helper
+from helpers.user import UUIDEncoder
 
 # config_credentials
 env_credentials = dotenv_values('.env')
@@ -56,7 +60,7 @@ async def authenticate_user(username_or_email: str, password_hash: str):
     return False
 
 
-#password is actually password_hash in models
+# password is actually password_hash in models
 async def token_generator(username_or_email: str, password: str) -> str:
     user = await authenticate_user(username_or_email, password)
     if not user:
@@ -67,7 +71,7 @@ async def token_generator(username_or_email: str, password: str) -> str:
         )
 
     token_data = {
-        "id": user.id,
+        "id": json.dumps(user.id, cls=UUIDEncoder),
         "username": user.username
     }
 

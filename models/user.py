@@ -14,7 +14,7 @@ class User(Model):
     last_name = fields.CharField(max_length=128, null=False)
     username = fields.CharField(max_length=128, unique=True)
     email = fields.CharField(max_length=200, null=False, unique=True)
-    password_hash = fields.CharField(max_length=128, null=True)
+    password_hash = fields.CharField(max_length=128, null=False)
     is_verified = fields.BooleanField(default=False, null=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     modified_at = fields.DatetimeField(auto_now=True)
@@ -46,6 +46,10 @@ class CreateUser(BaseModel):
             raise ValueError('passwords do not match')
         return values
     
+    
+class CreateUserToken(BaseModel):
+    username: str
+    password: str
 
 
 user_pydantic = pydantic_model_creator(

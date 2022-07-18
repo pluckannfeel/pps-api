@@ -10,7 +10,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from tortoise.contrib.fastapi import HTTPNotFoundError
 
 # models
-from models.user import User, user_pydantic, userIn_pydantic, userOut_pydantic, CreateUser
+from models.user import User, user_pydantic, userIn_pydantic, userOut_pydantic, CreateUser, CreateUserToken
 
 # authentication
 from auth.authentication import hash_password, token_generator, verify_password
@@ -28,11 +28,6 @@ async def get_users():
     return await user_pydantic.from_queryset(User.all())
 
 
-# @router.get("/me")
-# async def read_user_me():
-#     return {"username": "jarvis"}
-
-
 @router.get("/{username}", tags=["Users"], name="Get user", response_model=user_pydantic, responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}})
 async def read_user(username: str):
     return await user_pydantic.from_queryset_single(User.get(username=username))
@@ -41,29 +36,25 @@ async def read_user(username: str):
 
 
 @router.post("/register", tags=["Users"], status_code=status.HTTP_201_CREATED)
-async def create_user(user: userIn_pydantic, form_data: CreateUser = Depends()) -> Type[dict]:
-    if user:
-        user_info = form_data.dict(exclude_unset=True)
+async def create_user(user: CreateUser) -> Type[dict]:
+    # if you use user_pydantic_
+    # user: userIn_pydantic
+    # user_info = user.dict(exclude_unset=True)
 
-        # user_info['password_hash'] = hash_password(user_info['password_hash'])
+    user_info = user.dict(exclude_unset=True)
+    print(user_info)
+    user = await User.create(first_name=user_info['first_name'], last_name=user_info['last_name'], username=user_info['username'], email=user_info['email'], password_hash=hash_password(user_info['password_hash'].get_secret_value()))
+    # user_obj = await User.create(**user_info)
 
-        user = await User.create(first_name=user_info['first_name'], last_name=user_info['last_name'], username=user_info['username'], email=user_info['email'], password_hash=hash_password(user_info['password_hash'].get_secret_value()))
+    new_user = await user_pydantic.from_tortoise_orm(user)
 
-        # user_obj = await User.create(**user_info)
-
-        new_user = await user_pydantic.from_tortoise_orm(user)
-
-        return {'user': new_user, 'msg': "new user created."}
-
-    # return new_user
+    return {'user': new_user, 'msg': "new user created."}
 
 
+# CreateUserToken |
 @router.post("/token", tags=["Users"])
-async def generate_token(request_form: OAuth2PasswordRequestForm = Depends()):
+async def generate_token(request_form: CreateUserToken) -> Type[dict]:
+    # async def generate_token(request_form: OAuth2PasswordRequestForm = Depends()) -> Type[dict]:
     token = await token_generator(request_form.username, request_form.password)
     print(token)
     return {"access_token": token, "token_type": "bearer"}
-
-# @router.post('verify', status_code=status.HTTP_200_OK)
-# async def confirm_password(password: str) -> Type[dict]:
-#     if password:
