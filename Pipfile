@@ -14,7 +14,7 @@ jwt = "*"
 pyjwt = "*"
 pip = "*"
 python-multipart = "*"
-pydantic = {extras = ["dotenv"], version = "*"}
+pydantic = {extras = ["email"], version = "*"}
 email-validator = "*"
 
 [dev-packages]

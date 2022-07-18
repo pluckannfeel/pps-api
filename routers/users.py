@@ -10,7 +10,8 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from tortoise.contrib.fastapi import HTTPNotFoundError
 
 # models
-from models.user import User, user_pydantic, userIn_pydantic, userOut_pydantic, CreateUser, CreateUserToken
+from models.user import User, user_pydantic
+from models.user_basemodel import CreateUser, CreateUserToken
 
 # authentication
 from auth.authentication import hash_password, token_generator, verify_password
@@ -36,24 +37,26 @@ async def read_user(username: str):
 
 
 @router.post("/register", tags=["Users"], status_code=status.HTTP_201_CREATED)
-async def create_user(user: CreateUser) -> Type[dict]:
+async def create_user(user: CreateUser) -> dict:
     # if you use user_pydantic_
     # user: userIn_pydantic
     # user_info = user.dict(exclude_unset=True)
 
+    # note: not a good idea to put validations here, e.g for password: password is hashed after this line, its better to check the password field in front end
+
     user_info = user.dict(exclude_unset=True)
-    print(user_info)
-    user = await User.create(first_name=user_info['first_name'], last_name=user_info['last_name'], username=user_info['username'], email=user_info['email'], password_hash=hash_password(user_info['password_hash'].get_secret_value()))
+
+    user_data = await User.create(first_name=user_info['first_name'], last_name=user_info['last_name'], username=user_info['username'], email=user_info['email'], password_hash=hash_password(user_info['password_hash'].get_secret_value()))
     # user_obj = await User.create(**user_info)
 
-    new_user = await user_pydantic.from_tortoise_orm(user)
+    new_user = await user_pydantic.from_tortoise_orm(user_data)
 
     return {'user': new_user, 'msg': "new user created."}
 
 
 # CreateUserToken |
 @router.post("/token", tags=["Users"])
-async def generate_token(request_form: CreateUserToken) -> Type[dict]:
+async def generate_token(request_form: CreateUserToken) -> dict:
     # async def generate_token(request_form: OAuth2PasswordRequestForm = Depends()) -> Type[dict]:
     token = await token_generator(request_form.username, request_form.password)
     print(token)

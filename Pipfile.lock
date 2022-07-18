@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "fb47506061600d52bd0fc1cf55a03f126c678938edc56bf2d65f8594f88094ac"
+            "sha256": "881414efea11e51d7fd67daebbf3931732dd55a0b4f67629673119a66d6b6a5b"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -234,7 +234,7 @@
         },
         "pydantic": {
             "extras": [
-                "dotenv"
+                "email"
             ],
             "hashes": [
                 "sha256:02eefd7087268b711a3ff4db528e9916ac9aa18616da7bca69c1871d0b7a091f",

@@ -47,14 +47,16 @@ async def verify_token(token: str):
     return user
 
 
-async def verify_password(input_password: str, hashed_password: str) -> str:
+async def verify_password(input_password, hashed_password):
     return password_hash_context.verify(input_password, hashed_password)
 
-
-async def authenticate_user(username_or_email: str, password_hash: str):
+# HIGH PRIORITY MUST FIX!
+async def authenticate_user(username_or_email: str, input_password: str):
     user = await User.get(Q(username=username_or_email) | Q(email=username_or_email))
-    print(authenticate_user)
-    if user and verify_password(password_hash, user.password_hash):
+    print(user.email)
+    print(user.password_hash)
+    # print(password_hash_context.verify(password_hash, user.password_hash))
+    if user and verify_password(input_password, user.password_hash):
         return user
 
     return False
@@ -63,6 +65,7 @@ async def authenticate_user(username_or_email: str, password_hash: str):
 # password is actually password_hash in models
 async def token_generator(username_or_email: str, password: str) -> str:
     user = await authenticate_user(username_or_email, password)
+    print(user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -77,3 +80,7 @@ async def token_generator(username_or_email: str, password: str) -> str:
 
     token = jwt.encode(token_data, env_credentials["SECRET_KEY"])
     return token
+
+
+if __name__ == '__main__':
+    authenticate_user('jarviscript', 'admin')
