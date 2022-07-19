@@ -16,6 +16,7 @@ pip = "*"
 python-multipart = "*"
 pydantic = {extras = ["email"], version = "*"}
 email-validator = "*"
+fastapi-mail = "*"
 
 [dev-packages]
 
