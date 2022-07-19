@@ -51,13 +51,16 @@ async def verify_password(input_password, hashed_password):
     return password_hash_context.verify(input_password, hashed_password)
 
 # HIGH PRIORITY MUST FIX!
+
+
 async def authenticate_user(username_or_email: str, input_password: str):
     user = await User.get(Q(username=username_or_email) | Q(email=username_or_email))
-    print(user.email)
     print(user.password_hash)
-    # print(password_hash_context.verify(password_hash, user.password_hash))
-    if user and verify_password(input_password, user.password_hash):
-        return user
+    is_authenticated = password_hash_context.verify(
+        input_password, user.password_hash)
+    if user:
+        if is_authenticated:
+            return user
 
     return False
 
@@ -65,12 +68,12 @@ async def authenticate_user(username_or_email: str, input_password: str):
 # password is actually password_hash in models
 async def token_generator(username_or_email: str, password: str) -> str:
     user = await authenticate_user(username_or_email, password)
-    print(user)
+    # print(user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
-            headers={"WWW-Authenticate:": "Bearer"}
+            # headers={"WWW-Authenticate:": "Bearer"}
         )
 
     token_data = {
