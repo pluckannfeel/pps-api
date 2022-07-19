@@ -26,14 +26,10 @@ class CreateUser(BaseModel):
 
         # check if password and confirm password not matches
         password, confirm = values.get('password_hash'), values.get('confirm_password')
-        if not verify_password(password, confirm):
+        if password != confirm:
             raise ValueError('password and confirm password does not match.')
         
         return values
-
-
-from passlib.context import CryptContext
-password_hash_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 class CreateUserToken(BaseModel):
     username: str
