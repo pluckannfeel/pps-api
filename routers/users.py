@@ -3,7 +3,7 @@ import email
 from typing import List, Type
 
 # fastapi
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 # tortoise
@@ -11,10 +11,13 @@ from tortoise.contrib.fastapi import HTTPNotFoundError
 
 # models
 from models.user import User, user_pydantic
-from models.user_basemodel import CreateUser, CreateUserToken
+from models.user_schema import CreateUser, CreateUserToken
 
 # authentication
-from auth.authentication import hash_password, token_generator, verify_password
+from auth.authentication import hash_password, token_generator, verify_password, verify_token_email
+
+# email user verification
+from auth.email_verification import send_email
 
 router = APIRouter(
     prefix="/users",
@@ -50,6 +53,12 @@ async def create_user(user: CreateUser) -> dict:
     # user_obj = await User.create(**user_info)
 
     new_user = await user_pydantic.from_tortoise_orm(user_data)
+    
+    emails = (new_user.email,)
+    
+    if new_user:
+        print("New user: " + new_user.email)
+        await send_email(emails, new_user)
 
     return {'user': new_user, 'msg': "new user created."}
 
@@ -61,3 +70,20 @@ async def generate_token(request_form: CreateUserToken) -> dict:
     token = await token_generator(request_form.username, request_form.password)
     print(token)
     return {"access_token": token, "token_type": "bearer"}
+
+
+@router.get("/verification", tags=["Users"])
+async def verify_user(token: str):  # request: Request,
+    user = verify_token_email(token)
+
+    if user:
+        if not user.is_verified:
+            user.is_verified = True
+            # await User.filter(id=user.id).update()
+            await user.save()
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or Expired token.",
+        headers={"WWW-Authenticate": "Bearer"}
+    )

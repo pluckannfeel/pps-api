@@ -47,6 +47,21 @@ async def verify_token(token: str):
     return user
 
 
+async def verify_token_email(token: str):
+    try:
+        payload = jwt.decode(
+            token, env_credentials["SECRET_KEY"], algorithms="HS256")
+        user = await User.get(id=payload.get("id"))
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    finally:
+        return await user
+
+
 async def verify_password(input_password, hashed_password):
     return password_hash_context.verify(input_password, hashed_password)
 
@@ -73,7 +88,8 @@ async def token_generator(username_or_email: str, password: str) -> str:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
-            # headers={"WWW-Authenticate:": "Bearer"}
+            # headers={"WWW-Authenticate": "Basic"},
+            headers={"WWW-Authenticate": "Bearer"}
         )
 
     token_data = {
