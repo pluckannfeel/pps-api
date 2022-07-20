@@ -38,6 +38,23 @@ async def read_user(username: str):
 
 # response_model=userOut_pydantic
 
+@router.get("/verification/", tags=["Users"], name="Verify User", responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}})
+async def verify_user(token: str):  # request: Request,
+    user = await verify_token_email(token)
+    print("user object ", user)
+    if user:
+        if not user.is_verified:
+            user.is_verified = True
+            # await User.filter(id=user.id).update()
+            await user.save()
+            return {"msg": "user successfully verified."}
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or Expired token.",
+        headers={"WWW-Authenticate": "Bearer"}
+    )
+
 
 @router.post("/register", tags=["Users"], status_code=status.HTTP_201_CREATED)
 async def create_user(user: CreateUser) -> dict:
@@ -54,7 +71,7 @@ async def create_user(user: CreateUser) -> dict:
 
     new_user = await user_pydantic.from_tortoise_orm(user_data)
     
-    emails = (new_user.email,)
+    emails = [new_user.email]
     
     if new_user:
         print("New user: " + new_user.email)
@@ -68,22 +85,6 @@ async def create_user(user: CreateUser) -> dict:
 async def generate_token(request_form: CreateUserToken) -> dict:
     # async def generate_token(request_form: OAuth2PasswordRequestForm = Depends()) -> Type[dict]:
     token = await token_generator(request_form.username, request_form.password)
-    print(token)
     return {"access_token": token, "token_type": "bearer"}
-
-
-@router.get("/verification", tags=["Users"])
-async def verify_user(token: str):  # request: Request,
-    user = verify_token_email(token)
-
-    if user:
-        if not user.is_verified:
-            user.is_verified = True
-            # await User.filter(id=user.id).update()
-            await user.save()
-
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid or Expired token.",
-        headers={"WWW-Authenticate": "Bearer"}
-    )
+    
+    

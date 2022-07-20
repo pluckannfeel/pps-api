@@ -15,7 +15,7 @@ from tortoise.expressions import Q
 from models.user import User
 
 # helper
-from helpers.user import UUIDEncoder
+from helpers.user import UUIDEncoder, UUIDDecoder
 
 # config_credentials
 env_credentials = dotenv_values('.env')
@@ -51,15 +51,19 @@ async def verify_token_email(token: str):
     try:
         payload = jwt.decode(
             token, env_credentials["SECRET_KEY"], algorithms="HS256")
-        user = await User.get(id=payload.get("id"))
+        print("UUID: " + json.loads(payload.get("id")))
+        user_id = json.loads(payload.get("id"))
+        user = await User.get(id=user_id)
+        print(f"user: {user}")
     except:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token.",
             headers={"WWW-Authenticate": "Bearer"}
         )
-    finally:
-        return await user
+    
+    return user
+        
 
 
 async def verify_password(input_password, hashed_password):
@@ -70,7 +74,7 @@ async def verify_password(input_password, hashed_password):
 
 async def authenticate_user(username_or_email: str, input_password: str):
     user = await User.get(Q(username=username_or_email) | Q(email=username_or_email))
-    print(user.password_hash)
+    # print(user.password_hash)
     is_authenticated = password_hash_context.verify(
         input_password, user.password_hash)
     if user:
@@ -93,11 +97,13 @@ async def token_generator(username_or_email: str, password: str) -> str:
         )
 
     token_data = {
-        "id": json.dumps(user.id, cls=UUIDEncoder),
+        "id": json.dumps(user.id, separators=('-', '_'), cls=UUIDEncoder),
         "username": user.username
     }
+    print(token_data)
 
     token = jwt.encode(token_data, env_credentials["SECRET_KEY"])
+    
     return token
 
 

@@ -11,29 +11,19 @@ from fastapi import BackgroundTasks, UploadFile, File, Form, Depends, HTTPExcept
 import json
 from helpers.user import UUIDEncoder
 
-# pydantic schema
-
+# send grid
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 # config_credentials
 env_credentials = dotenv_values('.env')
 
-email_configuration = ConnectionConfig(
-    MAIL_USERNAME="pps.api2022@gmail.com",
-    MAIL_PASSWORD="Sivrajnallim96",
-    MAIL_FROM="pps.api2022@gmail.com",
-    MAIL_PORT=587,
-    MAIL_SERVER="smtp.gmail.com",
-    MAIL_TLS=True,
-    MAIL_SSL=False,
-    USE_CREDENTIALS=True,
-    VALIDATE_CERTS=True
-)
 
-# find other mail service = gmail is strict
-async def send_email(email: List, userInstance: User):
+async def send_email(emails: List, user: User):
     token_data = {
-        "id": json.dumps(userInstance.id, cls=UUIDEncoder),
-        "username": userInstance.username or userInstance.email
+        "id": json.dumps(user.id, cls=UUIDEncoder),
+        "username": user.username or user.email
     }
 
     token = jwt.encode(token_data, env_credentials["SECRET_KEY"])
@@ -49,21 +39,26 @@ async def send_email(email: List, userInstance: User):
                     <h3> Account Verificcation </h3>
                     <br>
                     <p> Thank you, please click on link </p>
-                    <a href="http://localhost:8000/verification/?token={token}">Verify</a>
+                    <a href="http://localhost:8000/users/verification/?token={token}">Verify</a>
                 </div>
             </body>
         </html>
+        
+        
     """
 
-    message = MessageSchema(
-        subject="Verify User Registration",
-        recipients=email,
-        body=template,
-        subtype="html",
+    message = Mail(
+        from_email=env_credentials['MAIL_USERNAME'],
+        to_emails=emails,
+        subject='Verify User Registration',
+        html_content=template
     )
-    
-    fastmail = FastMail(email_configuration)
-    await fastmail.send_message(message=message)
-    
-    return
-    
+
+    try:
+        sg = SendGridAPIClient(env_credentials['SENDGRID_API_KEY'])
+        response = sg.send(message)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+    except Exception as e:
+        print(e)

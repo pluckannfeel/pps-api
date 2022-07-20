@@ -17,6 +17,7 @@ python-multipart = "*"
 pydantic = {extras = ["email"], version = "*"}
 email-validator = "*"
 fastapi-mail = "*"
+sendgrid = "*"
 
 [dev-packages]
 
