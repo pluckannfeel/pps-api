@@ -42,7 +42,8 @@ initialize_db(app)
 app.include_router(userRouter)
 
 origins = [
-    'http://localhost:8000'
+    'http://localhost:8000',
+    'http://localhost:3000'
 ]
 
 # middlewares
