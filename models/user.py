@@ -7,6 +7,7 @@ class User(Model):
     id = fields.UUIDField(pk=True, index=True)
     first_name = fields.CharField(max_length=128, null=False)
     last_name = fields.CharField(max_length=128, null=False)
+    birth_date = fields.DateField(null=False)
     username = fields.CharField(max_length=128, unique=True)
     email = fields.CharField(max_length=200, null=False, unique=True)
     password_hash = fields.CharField(max_length=128, null=False)

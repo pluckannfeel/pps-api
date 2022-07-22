@@ -1,3 +1,4 @@
+from datetime import date
 from pydantic import BaseModel, EmailStr, SecretStr, root_validator
 # import email_validator
 
@@ -8,6 +9,7 @@ class CreateUser(BaseModel):
     first_name: str
     last_name: str
     username: str
+    birth_date: date
     email: EmailStr
     password_hash: SecretStr
     confirm_password: SecretStr

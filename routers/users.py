@@ -66,7 +66,7 @@ async def create_user(user: CreateUser) -> dict:
 
     user_info = user.dict(exclude_unset=True)
 
-    user_data = await User.create(first_name=user_info['first_name'], last_name=user_info['last_name'], username=user_info['username'], email=user_info['email'], password_hash=hash_password(user_info['password_hash'].get_secret_value()))
+    user_data = await User.create(first_name=user_info['first_name'], last_name=user_info['last_name'], birth_date=user_info['birth_date'], username=user_info['username'], email=user_info['email'], password_hash=hash_password(user_info['password_hash'].get_secret_value()))
     # user_obj = await User.create(**user_info)
 
     new_user = await user_pydantic.from_tortoise_orm(user_data)
@@ -75,7 +75,8 @@ async def create_user(user: CreateUser) -> dict:
     
     if new_user:
         print("New user: " + new_user.email)
-        await send_email(emails, new_user)
+         # for sending email verification
+        # await send_email(emails, new_user)
 
     return {'user': new_user, 'msg': "new user created."}
 
