@@ -5,6 +5,7 @@ from typing import List, Type
 # fastapi
 from fastapi import APIRouter, Depends, status, Request, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.responses import JSONResponse
 
 # tortoise
 from tortoise.contrib.fastapi import HTTPNotFoundError
@@ -38,6 +39,7 @@ async def read_user(username: str):
 
 # response_model=userOut_pydantic
 
+
 @router.get("/verification/", tags=["Users"], name="Verify User", responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}})
 async def verify_user(token: str):  # request: Request,
     user = await verify_token_email(token)
@@ -70,22 +72,40 @@ async def create_user(user: CreateUser) -> dict:
     # user_obj = await User.create(**user_info)
 
     new_user = await user_pydantic.from_tortoise_orm(user_data)
-    
+
     emails = [new_user.email]
-    
+
     if new_user:
         print("New user: " + new_user.email)
-         # for sending email verification
+        # for sending email verification
         # await send_email(emails, new_user)
 
     return {'user': new_user, 'msg': "new user created."}
 
 
-# CreateUserToken |
+@router.post("/login", tags=["Users"], status_code=status.HTTP_200_OK)
+async def login_user(request_form: CreateUserToken) -> dict:
+    token = await token_generator(request_form.username, request_form.password)
+
+    if not token:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    return {'token': token}
+
+
 @router.post("/token", tags=["Users"])
 async def generate_token(request_form: CreateUserToken) -> dict:
     # async def generate_token(request_form: OAuth2PasswordRequestForm = Depends()) -> Type[dict]:
     token = await token_generator(request_form.username, request_form.password)
+    if not token:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
     return {"access_token": token, "token_type": "bearer"}
-    
-    
