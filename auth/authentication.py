@@ -32,7 +32,7 @@ def verify_password(input_password: str, hashed_password: str) -> str:
     return password_hash_context.verify(input_password, hashed_password)
 
 
-async def verify_token(token: str):
+async def get_user_credentials(token: str):
     try:
         payload = jwt.decode(
             token, env_credentials["SECRET_KEY"], algorithms="HS256")

@@ -12,7 +12,7 @@ from tortoise.contrib.fastapi import HTTPNotFoundError
 
 # models
 from models.user import User, user_pydantic
-from models.user_schema import CreateUser, CreateUserToken
+from models.user_schema import CreateUser, CreateUserToken, ChangeUserPassword
 
 # authentication
 from auth.authentication import hash_password, token_generator, verify_password, verify_token_email
@@ -94,7 +94,12 @@ async def login_user(request_form: CreateUserToken) -> dict:
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-    return {'token': token}
+    return {'token': token, 'email': request_form.username}
+
+
+@router.post("/change_password", tags=["Users"], status_code=status.HTTP_200_OK)
+async def change_password(request_form: ChangeUserPassword) -> dict:
+    pass
 
 
 @router.post("/token", tags=["Users"])
