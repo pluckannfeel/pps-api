@@ -51,9 +51,9 @@ class CreateUserToken(BaseModel):
         return values
     
 class ChangeUserPassword(BaseModel):
-    old_password: str
-    new_password: str
-    confirm_password: str
+    username: str
+    old_password: SecretStr
+    new_password: SecretStr
 
     class Config:
         json_encoders = {
@@ -68,8 +68,8 @@ class ChangeUserPassword(BaseModel):
                 raise ValueError('Form has an empty field.')
 
         # check if password and confirm password not matches
-        password, confirm = values.get('new_password'), values.get('confirm_password')
-        if password != confirm:
-            raise ValueError('password and confirm password does not match.')
+        # password, confirm = values.get('new_password'), values.get('confirm_password')
+        # if password != confirm:
+        #     raise ValueError('password and confirm password does not match.')
 
         return values

@@ -99,7 +99,27 @@ async def login_user(request_form: CreateUserToken) -> dict:
 
 @router.post("/change_password", tags=["Users"], status_code=status.HTTP_200_OK)
 async def change_password(request_form: ChangeUserPassword) -> dict:
-    pass
+    user = await User.get(username=request_form.username)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+        
+    old_password = request_form.old_password.get_secret_value()
+    
+    if not verify_password(old_password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    user.password_hash = hash_password(request_form.new_password.get_secret_value())
+    await user.save()
+
+    return {'msg': "password changed."}
 
 
 @router.post("/token", tags=["Users"])

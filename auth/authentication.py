@@ -40,7 +40,7 @@ async def get_user_credentials(token: str):
     except:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
+            detail="Invalid username or password.",
             headers={"WWW-Authenticate": "Bearer"}
         )
 
@@ -91,7 +91,7 @@ async def token_generator(username_or_email: str, password: str) -> str:
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
+            detail="Invalid username or password.",
             # headers={"WWW-Authenticate": "Basic"},
             headers={"WWW-Authenticate": "Bearer"}
         )
