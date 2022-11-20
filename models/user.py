@@ -9,6 +9,7 @@ class User(Model):
     birth_date = fields.DateField(null=False)
     username = fields.CharField(max_length=128, unique=True)
     email = fields.CharField(max_length=200, null=False, unique=True)
+    phone = fields.CharField(max_length=20, null=False)
     password_hash = fields.CharField(max_length=128, null=False)
     is_verified = fields.BooleanField(default=False, null=False)
     created_at = fields.DatetimeField(auto_now_add=True)

@@ -11,6 +11,7 @@ class CreateUser(BaseModel):
     username: str
     birth_date: date
     email: EmailStr
+    phone: str
     password_hash: SecretStr
     confirm_password: SecretStr
 
