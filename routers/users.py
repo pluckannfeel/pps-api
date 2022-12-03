@@ -6,6 +6,7 @@ from typing import List, Type
 from dotenv import load_dotenv
 from helpers.definitions import get_directory_path
 from helpers.s3_file_upload import upload_image_to_s3
+from helpers.data_checker import DataChecker as data_checker
 
 # fastapi
 from fastapi import APIRouter, Depends, status, Request, HTTPException, File, UploadFile
@@ -96,19 +97,19 @@ async def create_user(user: CreateUser) -> dict:
     return {'user': new_user, 'msg': "new user created."}
 
 @router.post("/user_add_img", tags=["Users"], status_code=status.HTTP_201_CREATED)
-async def add_user_img(user_img: UploadUserImage, file: UploadFile = File(...)) -> dict:
+# async def add_user_img(user: str, file: UploadFile = File(...)) -> dict:
+async def add_user_img(user: str = Depends(data_checker), file: UploadFile = File(...)):
     # current path to save on local uploads folder but we will save it on s3 bucket later on
+    print(user)
+    print(file)
     
-    img_info = user_img.dict()
-    print("img_info: ", img_info)
-    the_user = await User.get(username=img_info['username']).values('id')
-    username = img_info['username']
+    # img_info = user_img.dict()
+    the_user = await User.get(username=user).values('id')
+    username = user
 
     # to avoiid file name duplicates, lets concatenate datetime and user's name
     now = datetime.now()
     new_image_name = username.split('@')[0] + now.strftime("_%Y%m%d_%H%M%S") + '.' + file.filename.split('.')[-1]
-    
-    
     
     s3_upload_file = s3_upload_path + '/' + new_image_name
     # check if content type is image

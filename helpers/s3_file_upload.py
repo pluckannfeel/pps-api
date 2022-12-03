@@ -20,7 +20,6 @@ upload_path = get_directory_path() +  '\\uploads'
 def upload_image_to_s3(imageFile, new_image_name):
     bucket_name = 'pps-bucket'
     object_name = 'uploads/'+ imageFile.filename
-    print(new_image_name)
     temp = NamedTemporaryFile(delete=False)
     try:
         try:
@@ -33,11 +32,12 @@ def upload_image_to_s3(imageFile, new_image_name):
             imageFile.file.close()
             
         # upload here
-        client.upload_file(temp.name, bucket_name, object_name, ExtraArgs={"ACL": 'public-read-write', "ContentType": imageFile.content_type})
+        client.upload_file(temp.name, bucket_name, object_name, ExtraArgs={"ACL": 'public-read', "ContentType": imageFile.content_type})
         
         #  rename s3 uploaded file
-        client.copy_object(Bucket=bucket_name, CopySource=bucket_name + '/' + object_name, Key='uploads/' + new_image_name, ACL='public-read-write')
+        client.copy_object(Bucket=bucket_name, CopySource=bucket_name + '/' + object_name, Key='uploads/' + new_image_name, ACL='public-read')
         
+        print(object_name)
         # delete old file
         client.delete_object(Bucket=bucket_name, Key=object_name)
     except Exception as e:
