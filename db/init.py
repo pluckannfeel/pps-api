@@ -7,7 +7,11 @@ def initialize_db(app):
         modules={
             'models': [
                 'models.user', 
-                'models.user_img'
+                'models.user_img',
+                'models.company',
+                'models.company_img',
+                'models.application',
+                'models.application_prospect',
             ]
         },
         generate_schemas=True,
