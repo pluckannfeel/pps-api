@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 # api routers
 from routers.users import router as userRouter
+from routers.companies import router as companyRouter
 # database
 from db.init import initialize_db
 
@@ -40,6 +41,7 @@ initialize_db(app)
 
 # ROUTERS
 app.include_router(userRouter)
+app.include_router(companyRouter)
 
 origins = [
     'http://127.0.0.1:8000'

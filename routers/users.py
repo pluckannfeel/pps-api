@@ -38,7 +38,7 @@ router = APIRouter(
     prefix="/users",
     tags=["Users"],
     # dependencies=[Depends(e.g get_token_header)] # from dependencies.py
-    responses={404: {"some_description": "Not found"}}
+    # responses={404: {"some_description": "Not found"}}
 )  # if you put args here this will be pass to all funcs below you can override it by adding it directly to each
 
 

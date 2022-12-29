@@ -31,4 +31,4 @@ apIn_pydantic = pydantic_model_creator(
     Application_Prospect, name="Application_ProspectIn", exclude_readonly=True)
 
 apOut_pydantic = pydantic_model_creator(
-    Application_Prospect, name="Application_ProspectOut")
+    Application_Prospect, name="Application_ProspectOut") 
