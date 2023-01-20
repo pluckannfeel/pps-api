@@ -61,6 +61,7 @@ starlette = "==0.19.1"
 typing-extensions = "==4.3.0"
 urllib3 = "==1.26.12"
 wrapt = "==1.14.1"
+fillpdf = "*"
 
 [dev-packages]
 

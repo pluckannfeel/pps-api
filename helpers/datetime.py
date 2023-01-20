@@ -21,3 +21,21 @@ def get_date_now(type_format: str) -> str:
         return today.strftime("%m/%d/%y")
     elif(type_format == 'd4'):
         return today.strftime("%b-%d-%Y")
+    
+def to_day_string(day: int) -> str:
+    if day == 1:
+        return '1st'
+    elif day == 2:
+        return '2nd'
+    elif day == 3:
+        return '3rd'
+    elif day == 21:
+        return '21st'
+    elif day == 22:
+        return '22nd'
+    elif day == 23:
+        return '23rd'
+    elif day == 31:
+        return '31st'
+    else:
+        return f'{day}th'

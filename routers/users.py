@@ -111,7 +111,7 @@ async def add_user_img(user: str, file: UploadFile = File(...)):
     now = datetime.now()
     new_image_name = username.split('@')[0] + now.strftime("_%Y%m%d_%H%M%S") + '.' + file.filename.split('.')[-1]
     
-    s3_upload_file = s3_upload_path + '/' + new_image_name
+    s3_upload_file = s3_upload_path + '/img/' + new_image_name
     # check if content type is image
     is_file_img = file.content_type.startswith('image')
 
@@ -145,6 +145,7 @@ async def get_user_credentials(username: str) -> dict:
     
     # this include the user_img table 
     joined_data = await User_Img.filter(user=the_user['id']).prefetch_related('user').order_by('-created_at').values('img_url', 'user__username', 'user__first_name', 'user__last_name', 'user__birth_date', 'user__email', 'user__phone', 'user__is_verified', 'user__created_at')
+    
         
     # SQL = User_Img.filter(user=the_user['id']).prefetch_related('user').values('img_url', 'user__username', 'user__first_name', 'user__last_name', 'user__birth_date', 'user__email', 'user__phone', 'user__is_verified', 'user__created_at').sql()
     # print(SQL)

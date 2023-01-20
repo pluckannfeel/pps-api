@@ -11,7 +11,8 @@ def initialize_db(app):
                 'models.company',
                 'models.company_img',
                 'models.application',
-                'models.application_prospect',
+                'models.contract'
+                # 'models.application_prospect',
             ]
         },
         generate_schemas=True,
