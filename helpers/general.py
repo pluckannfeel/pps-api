@@ -17,5 +17,5 @@ def zipfiles(filenames, zip_name):
     return StreamingResponse(
         iter([zip_io.getvalue()]), 
         media_type="application/x-zip-compressed", 
-        headers = { "Cnotent-Disposition": f"attachment; filename={zip_name}.zip"}
+        headers = { "Content-Disposition": f"attachment; filename={zip_name}.zip"}
     )

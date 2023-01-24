@@ -36,7 +36,7 @@ async def get_applications(user: GetApplications):
         
         #applications = await Application.filter(user=the_user['id']).select_related('company').order_by('-created_at').values('id', 'application_type', 'employer_category', 'agency_name', 'agency_address', 'agency_rep_name', 'agency_rep_position', 'date_filled', 'place_filled', 'job_positions', 'visa_type', 'created_at', company_name='company__name', company_rep_name='company__rep_name', company_rep_position='company__rep_position')
         
-        applications = await Application.filter(user=the_user['id']).select_related('company').values('id', 'application_type', 'employer_category', 'agency_name', 'agency_address', 'agency_rep_name', 'agency_rep_position', 'date_filled', 'place_filled', 'job_positions', 'visa_type', 'created_at', company_name='company__name', company_rep_name='company__rep_name', company_rep_position='company__rep_position', company_address='company__address', company_website='company__website', company_contact_number='company__contact_number', company_contact_person_name='company__contact_person_name', company_contact_person_number='company__contact_person_number',company_contact_person_position='company__contact_person_position', company_contact_person_email='company__contact_person_email', company_year_established='company__year_established', company_registered_industry='company__registered_industry', company_services='company__services', company_regular_workers='company__regular_workers', company_parttime_workers='company__parttime_workers', company_foreign_workers='company__foreign_workers')
+        applications = await Application.filter(user=the_user['id']).select_related('company').values('id', 'application_type', 'employer_category', 'agency_name', 'agency_address', 'agency_rep_name', 'agency_rep_position', 'date_filled', 'place_filled', 'job_positions', 'visa_type', 'created_at','company_id', company_name='company__name', company_rep_name='company__rep_name', company_rep_position='company__rep_position', company_address='company__address', company_website='company__website', company_contact_number='company__contact_number', company_contact_person_name='company__contact_person_name', company_contact_person_number='company__contact_person_number',company_contact_person_position='company__contact_person_position', company_contact_person_email='company__contact_person_email', company_year_established='company__year_established', company_registered_industry='company__registered_industry', company_services='company__services', company_regular_workers='company__regular_workers', company_parttime_workers='company__parttime_workers', company_foreign_workers='company__foreign_workers')
         
         # application_list = await application_pydantic.from_queryset(applications)
         
@@ -50,7 +50,7 @@ async def get_applications(user: GetApplications):
 async def generate_application(application_id: str):
     try:
         # get the application data
-        application_data = await Application.filter(id=application_id).select_related('company').values('id', 'application_type', 'employer_category', 'agency_name', 'agency_address', 'agency_rep_name', 'agency_rep_position', 'date_filled', 'place_filled', 'job_positions', 'visa_type', 'created_at', company_name='company__name', company_rep_name='company__rep_name', company_rep_position='company__rep_position', company_address='company__address', company_website='company__website', company_contact_number='company__contact_number', company_contact_person_name='company__contact_person_name', company_contact_person_number='company__contact_person_number',company_contact_person_position='company__contact_person_position', company_contact_person_email='company__contact_person_email', company_year_established='company__year_established', company_registered_industry='company__registered_industry', company_services='company__services', company_regular_workers='company__regular_workers', company_parttime_workers='company__parttime_workers', company_foreign_workers='company__foreign_workers')
+        application_data = await Application.filter(id=application_id).select_related('company').values('id', 'application_type', 'employer_category', 'agency_name', 'agency_address', 'agency_rep_name', 'agency_rep_positio  n', 'date_filled', 'place_filled', 'job_positions', 'visa_type', 'created_at', company_name='company__name', company_rep_name='company__rep_name', company_rep_position='company__rep_position', company_address='company__address', company_website='company__website', company_contact_number='company__contact_number', company_contact_person_name='company__contact_person_name', company_contact_person_number='company__contact_person_number',company_contact_person_position='company__contact_person_position', company_contact_person_email='company__contact_person_email', company_year_established='company__year_established', company_registered_industry='company__registered_industry', company_services='company__services', company_regular_workers='company__regular_workers', company_parttime_workers='company__parttime_workers', company_foreign_workers='company__foreign_workers')
         
         # generate pdf (returns dict)
         pdf = fill_pdf_professional(application_data)
@@ -97,3 +97,34 @@ async def create_applicaction(application: CreateApplication):
         return {'msg': 'error creating application.', 'error': e}
     
     return { "msg": "New Application Added.", "new_data": new_application}
+
+@router.put('/update', status_code=status.HTTP_200_OK)
+async def update_company(company: UpdateApplication):
+    application_data = company.dict(exclude_unset=True)
+    the_user = await User.get(username=application_data['user']).values('id')
+    # uuid
+    user = the_user['id']
+    application_id = application_data['id']
+    
+    copied_app = application_data.copy()
+    del copied_app['user']
+    del copied_app['id']
+    
+    print(list(copied_app))
+
+@router.delete('/delete', status_code=status.HTTP_200_OK)
+async def delete_application(application_details: DeleteApplication):
+    data = application_details.dict(exclude_unset=True)
+    the_user = await User.get(username=data['user']).values('id')
+    
+    user = the_user['id']
+    app_id = data['id']
+    
+    try:
+        await Application.filter(id=app_id, user_id=user).delete()
+        
+        return {"msg": "Application Deleted.", "del_data": app_id}
+    except Exception as e:
+        print(e)
+        return {"msg": e}
+    
