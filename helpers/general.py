@@ -14,7 +14,7 @@ def zipfiles(filenames, zip_name):
             zip_path = os.path.join(zip_subdir, fname)
             # Add file, at correct path
             temp_zip.write(fpath, zip_path)
-    return StreamingResponse(
+    return StreamingResponse( 
         iter([zip_io.getvalue()]), 
         media_type="application/x-zip-compressed", 
         headers = { "Content-Disposition": f"attachment; filename={zip_name}.zip"}

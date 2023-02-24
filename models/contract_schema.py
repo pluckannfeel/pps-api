@@ -1,8 +1,7 @@
 from datetime import date
 from pydantic import BaseModel, EmailStr, SecretStr, root_validator
 
-
-class GetApplications(BaseModel):
+class GetContracts(BaseModel):
     user: EmailStr
 
     @root_validator(pre=True)
@@ -13,20 +12,45 @@ class GetApplications(BaseModel):
                 raise ValueError('Form has an empty field.')
             
         return values
-
-class CreateApplication(BaseModel):
+    
+class CreateContracts(BaseModel):
     user: str # id
     company_id: str #id
-    application_type: str
-    employer_category: str
+    worker_name: str
     agency_name: str
     agency_address: str
     agency_rep_name: str
     agency_rep_position: str
-    date_filled: date
-    place_filled: str
-    job_positions: str
-    visa_type: str
+    site_employment: str
+    contract_duration: str # <num> <year(s)>
+    contract_terms: str # choose option but will be 'x' on pdf
+    bonus: str # once,twice,byperformance
+    salary_increase: str # once,twice,byperformance
+    work_start_time: str # 9:00 AM
+    work_end_time: str # 5:00 PM
+    work_rest: int
+    work_working_days: str # Tuesday to Saturday
+    work_days_off: str # Sunday & Monday
+    work_leave: int # 15
+    work_other_leave: str
+    job_title: str
+    job_description: str
+    job_duties: str # list/object str
+    job_criteria_degree: str
+    job_criteria_jlpt_level: str
+    job_criteria_year_exp: str
+    job_criteria_other: str
+    job_basic_salary: str
+    job_total_deductions: str
+    job_income_tax: str
+    job_social_insurance: str
+    job_utilities: str
+    job_accomodation: str
+    job_net_salary: str
+    housing_accomodation: str
+    accomodation_utilities: str
+    transportation: str
+    other_benefits: str # object e.g key : benefit name value: benefit value or contents
     
     class Config:
         json_encoders = {
@@ -38,7 +62,7 @@ class CreateApplication(BaseModel):
         # check values if there is one null
         for value in values:
             if len(str(values.get(value))) == 0:
-                raise ValueError('Form has an empty field.')
+                raise ValueError(f'Form has an empty field. : {value}')
 
         # check if password and confirm password not matches
         # password, confirm = values.get('password_hash'), values.get('confirm_password')
@@ -47,20 +71,45 @@ class CreateApplication(BaseModel):
         
         return values
     
-class UpdateApplication(BaseModel):
+class UpdateContract(BaseModel):
     id: str
     user: str # id
-    company: str #id
-    application_type: str
-    employer_category: str
+    company_id: str #id
+    worker_name: str
     agency_name: str
     agency_address: str
     agency_rep_name: str
     agency_rep_position: str
-    date_filled: date
-    place_filled: str
-    job_positions: str
-    visa_type: str
+    site_employment: str
+    contract_duration: str # <num> <year(s)>
+    contract_terms: str # choose option but will be 'x' on pdf
+    bonus: str # once,twice,byperformance
+    salary_increase: str # once,twice,byperformance
+    work_start_time: str # 9:00 AM
+    work_end_time: str # 5:00 PM
+    work_rest: int
+    work_working_days: str # Tuesday to Saturday
+    work_days_off: str # Sunday & Monday
+    work_leave: int # 15
+    work_other_leave: str
+    job_title: str
+    job_description: str
+    job_duties: str # list/object str
+    job_criteria_degree: str
+    job_criteria_jlpt_level: str
+    job_criteria_year_exp: str
+    job_criteria_other: str
+    job_basic_salary: str
+    job_total_deductions: str
+    job_income_tax: str
+    job_social_insurance: str
+    job_utilities: str
+    job_accomodation: str
+    job_net_salary: str
+    housing_accomodation: str
+    accomodation_utilities: str
+    transportation: str
+    other_benefits: str # object e.g key : benefit name value: benefit value or contents
     
     class Config:
         json_encoders = {
@@ -72,7 +121,7 @@ class UpdateApplication(BaseModel):
         # check values if there is one null
         for value in values:
             if len(str(values.get(value))) == 0:
-                raise ValueError('Form has an empty field.')
+                raise ValueError(f'Form has an empty field. : {value}')
 
         # check if password and confirm password not matches
         # password, confirm = values.get('password_hash'), values.get('confirm_password')
@@ -80,8 +129,8 @@ class UpdateApplication(BaseModel):
         #     raise ValueError('password and confirm password does not match.')
         
         return values
-    
-class DeleteApplication(BaseModel):
+
+class DeleteContract(BaseModel):
     id: str
     user: str
     

@@ -89,7 +89,7 @@ async def update_company(company: UpdateCompany):
     copied_company.pop("id")
     copied_company.pop("username")
     
-    print(list(copied_company))
+    # print(list(copied_company))
     
     await Company.filter(id=company_id, user_id=user).update(**copied_company)
     
