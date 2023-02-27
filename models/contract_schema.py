@@ -33,6 +33,9 @@ class CreateContracts(BaseModel):
     work_days_off: str # Sunday & Monday
     work_leave: int # 15
     work_other_leave: str
+    utilities: str
+    housing_accomodation: str
+    housing_cost: int
     job_title: str
     job_description: str
     job_duties: str # list/object str
@@ -47,10 +50,10 @@ class CreateContracts(BaseModel):
     job_utilities: str
     job_accomodation: str
     job_net_salary: str
-    housing_accomodation: str
-    accomodation_utilities: str
-    transportation: str
-    other_benefits: str # object e.g key : benefit name value: benefit value or contents
+    benefits_housing: str
+    benefits_utilities: str
+    benefits_transportation: str
+    benefits_other: str # object e.g key : benefit name value: benefit value or contents
     
     class Config:
         json_encoders = {
@@ -92,6 +95,9 @@ class UpdateContract(BaseModel):
     work_days_off: str # Sunday & Monday
     work_leave: int # 15
     work_other_leave: str
+    utilities: str
+    housing_accomodation: str
+    housing_cost: int
     job_title: str
     job_description: str
     job_duties: str # list/object str
@@ -106,10 +112,10 @@ class UpdateContract(BaseModel):
     job_utilities: str
     job_accomodation: str
     job_net_salary: str
-    housing_accomodation: str
-    accomodation_utilities: str
-    transportation: str
-    other_benefits: str # object e.g key : benefit name value: benefit value or contents
+    benefits_housing: str
+    benefits_utilities: str
+    benefits_transportation: str
+    benefits_other: str # object e.g key : benefit name value: benefit value or contents
     
     class Config:
         json_encoders = {

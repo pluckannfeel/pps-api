@@ -38,7 +38,7 @@ class CreateApplication(BaseModel):
         # check values if there is one null
         for value in values:
             if len(str(values.get(value))) == 0:
-                raise ValueError('Form has an empty field.')
+                raise ValueError(f'Form has an empty field: {value}')
 
         # check if password and confirm password not matches
         # password, confirm = values.get('password_hash'), values.get('confirm_password')

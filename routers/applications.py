@@ -18,7 +18,7 @@ from models.application import Application, application_pydantic
 from models.application_schema import CreateApplication, GetApplications, UpdateApplication, DeleteApplication
 
 # generate pdf
-from helpers.generate_pdf import fill_pdf_professional
+from helpers.generate_pdf import fill_pdf_application_professional
 from helpers.datetime import to_day_string
 from helpers.general import zipfiles
 
@@ -52,14 +52,14 @@ async def generate_application(application_id: str):
         application_data = await Application.filter(id=application_id).select_related('company').values('id', 'application_type', 'employer_category', 'agency_name', 'agency_address', 'agency_rep_name', 'agency_rep_position', 'date_filled', 'place_filled', 'job_positions', 'visa_type', 'created_at', company_name='company__name', company_rep_name='company__rep_name', company_rep_position='company__rep_position', company_address='company__address', company_website='company__website', company_contact_number='company__contact_number', company_contact_person_name='company__contact_person_name', company_contact_person_number='company__contact_person_number',company_contact_person_position='company__contact_person_position', company_contact_person_email='company__contact_person_email', company_year_established='company__year_established', company_registered_industry='company__registered_industry', company_services='company__services', company_regular_workers='company__regular_workers', company_parttime_workers='company__parttime_workers', company_foreign_workers='company__foreign_workers')
         
         # generate pdf (returns dict)
-        pdf = fill_pdf_professional(application_data)
+        pdf = fill_pdf_application_professional(application_data)
         
         print(list(pdf))
         
         return zipfiles(pdf, f'files_{application_id}')
         
     except Exception as e:
-        print("error: ", e)
+        print("error: ", str(e))
         
     return {'data': {}, 'msg': 'no data found.'}
 
@@ -110,8 +110,8 @@ async def create_application(application: CreateApplication):
         copied_new_application['company_rep_position'] = the_company['rep_position']
             
     except Exception as e:
-        print("error: ", e)
-        return {'msg': 'error creating application.', 'error': e}
+        print("error: ", str(e))
+        return {'msg': 'error creating application.', 'error': str(e)}
     
     return { "msg": "New Application Added.", "new_data": copied_new_application}
 

@@ -19,9 +19,11 @@ from models.contract import Contract, contract_pydantic
 from models.contract_schema import GetContracts, CreateContracts, UpdateContract, DeleteContract
 
 # generate pdf
-from helpers.generate_pdf import fill_pdf_professional
+from helpers.generate_pdf import fill_pdf_contract_professional
 from helpers.datetime import to_day_string
 from helpers.general import zipfiles
+from datetime import datetime
+from dateutil import tz
 
 router = APIRouter(
     prefix="/contracts",
@@ -36,9 +38,9 @@ async def get_contracts(user: GetContracts):
         username = user.dict()['user']
         the_user = await User.get(username=username).values('id')
         
-        contracts = await Contract.filter(user=the_user['id']).select_related('company').values('id', 'worker_name', 'agency_name', 'agency_address', 'agency_rep_name', 'agency_rep_position', 'site_employment', 'contract_duration', 'contract_terms', 'bonus', 'salary_increase', 'work_start_time', 'work_end_time', 'work_rest', 'work_working_days', 'work_days_off', 'work_leave', 'work_other_leave', 'job_title', 'job_description', 'job_duties', 'job_criteria_degree', 'job_criteria_jlpt_level', 'job_criteria_year_exp', 'job_criteria_other', 'job_basic_salary', 'job_total_deductions', 'job_income_tax', 'job_social_insurance', 'job_utilities', 'job_accomodation', 'job_net_salary', 'housing_accomodation', 'accomodation_utilities', 'transportation', 'other_benefits', company_name='company__name', company_address='company__address', company_contact_number='company__contact_number')
+        contracts = await Contract.filter(user=the_user['id']).select_related('company').values('id', 'worker_name', 'agency_name', 'agency_address', 'agency_rep_name', 'agency_rep_position', 'site_employment', 'contract_duration', 'contract_terms', 'bonus', 'salary_increase', 'work_start_time', 'work_end_time', 'work_rest', 'work_working_days', 'work_days_off', 'work_leave', 'work_other_leave', 'utilities', 'housing_accomodation','housing_cost', 'job_title', 'job_description', 'job_duties', 'job_criteria_degree', 'job_criteria_jlpt_level', 'job_criteria_year_exp', 'job_criteria_other', 'job_basic_salary', 'job_total_deductions', 'job_income_tax', 'job_social_insurance', 'job_utilities', 'job_accomodation', 'job_net_salary', 'benefits_housing', 'benefits_utilities', 'benefits_transportation', 'benefits_other', 'company_id', company_name='company__name', company_address='company__address', company_contact_number='company__contact_number')
         
-        print(contracts)
+        # print(contracts)
         return {'data': contracts, "msg": "list of employment contracts"}
     except Exception as e:
         print("error: ", e)
@@ -47,14 +49,20 @@ async def get_contracts(user: GetContracts):
 
 @router.get('/generate')
 async def generate_contracts(contract_id: str):
+    
     try:
-        contract_data = await Contract.filter(id=contract_id).select_related('company').values('id', 'worker_name', 'agency_name', 'agency_address', 'agency_rep_name', 'agency_rep_position', 'site_employment', 'contract_duration', 'contract_terms', 'bonus', 'salary_increase', 'work_start_time', 'work_end_time', 'work_rest', 'work_working_days', 'work_days_off', 'work_leave', 'work_other_leave', 'job_title', 'job_description', 'job_duties', 'job_criteria_degree', 'job_criteria_jlpt_level', 'job_criteria_year_exp', 'job_criteria_other', 'job_basic_salary', 'job_total_deductions', 'job_income_tax', 'job_social_insurance', 'job_utilities', 'job_accomodation', 'job_net_salary', 'housing_accomodation', 'accomodation_utilities', 'transportation', 'other_benefits', company_name='company__name', company_address='company__address', company_contact_number='company__contact_number')
+        contract_data = await Contract.filter(id=contract_id).select_related('company').values('id', 'worker_name', 'agency_name', 'agency_address', 'agency_rep_name', 'agency_rep_position', 'site_employment', 'contract_duration', 'contract_terms', 'bonus', 'salary_increase', 'work_start_time', 'work_end_time', 'work_rest', 'work_working_days', 'work_days_off', 'work_leave', 'work_other_leave', 'utilities', 'housing_accomodation', 'housing_cost', 'job_title', 'job_description', 'job_duties', 'job_criteria_degree', 'job_criteria_jlpt_level', 'job_criteria_year_exp', 'job_criteria_other', 'job_basic_salary', 'job_total_deductions', 'job_income_tax', 'job_social_insurance', 'job_utilities', 'job_accomodation', 'job_net_salary', 'benefits_housing', 'benefits_utilities', 'benefits_transportation', 'benefits_other', 'company_id', company_name='company__name', company_rep_name='company__rep_name',company_rep_position='company__rep_position', company_address='company__address', company_contact_number='company__contact_number')
         
-        # pdf = 
         
-        # return zipfiles(pdf, f'files_{contract_id}')
+        # print(contract_data)
+        
+        pdf = fill_pdf_contract_professional(contract_data)
+        
+        # print(pdf)
+        
+        return zipfiles(pdf, f'files_{contract_id}')
     except Exception as e:
-        print("error: ", e)
+        print("error while generating contract: ", e)
         
     return {'data': {}, 'msg': 'no data found.'}
 
@@ -94,7 +102,24 @@ async def create_contract(contract: CreateContracts):
 
 @router.put('/update', status_code=status.HTTP_200_OK)
 async def update_contract(contract_details: UpdateContract):
-    pass
+    contract_data = contract_details.dict(exclude_unset=True)
+    the_user = await User.get(username=contract_data['user']).values('id')
+    
+    # get the contract id
+    the_contract = await Contract.get(user_id=the_user['id'],id=contract_data['id']).values('id')
+    
+    copied_contract = contract_data.copy()
+    # slice all unnecessary payloads here
+    del copied_contract['id']
+    del copied_contract['user']
+    
+    # print(copied_contract)
+    
+    await Contract.filter(id=the_contract['id'], user_id=the_user['id']).update(**copied_contract)
+    
+    updated_contract = await Contract.get(id=the_contract['id']).select_related('company').values('id', 'worker_name', 'agency_name', 'agency_address', 'agency_rep_name', 'agency_rep_position', 'site_employment', 'contract_duration', 'contract_terms', 'bonus', 'salary_increase', 'work_start_time', 'work_end_time', 'work_rest', 'work_working_days', 'work_days_off', 'work_leave', 'work_other_leave', 'utilities', 'housing_accomodation', 'housing_cost', 'job_title', 'job_description', 'job_duties', 'job_criteria_degree', 'job_criteria_jlpt_level', 'job_criteria_year_exp', 'job_criteria_other', 'job_basic_salary', 'job_total_deductions', 'job_income_tax', 'job_social_insurance', 'job_utilities', 'job_accomodation', 'job_net_salary', 'benefits_housing', 'benefits_utilities', 'benefits_transportation', 'benefits_other', 'company_id', company_name='company__name', company_address='company__address', company_contact_number='company__contact_number')
+    
+    return {"msg":"Contract Updated.", "new_data": updated_contract}
 
 @router.delete('/delete', status_code=status.HTTP_200_OK)
 async def delete_contract(contract_details: DeleteContract):
