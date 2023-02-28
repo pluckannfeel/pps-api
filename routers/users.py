@@ -122,6 +122,10 @@ async def add_user_img(user: str, file: UploadFile = File(...)):
     
     new_user_img = await user_img_pydantic.from_tortoise_orm(user_img_data)
     
+    copied_user = new_user_img.dict(exclude_unset=True).copy()
+    
+    # print('user_data: ', new_user_img)
+    
     if not new_user_img and not is_file_img:
         return {'error_msg': "user image not added."}
     
@@ -135,7 +139,10 @@ async def add_user_img(user: str, file: UploadFile = File(...)):
     # after inserting renaem the file
     # os.rename(upload_file, upload_path + '\\' + new_image_name)
 
-    return {'file': file.filename, 'msg': "new user image created."}
+    img_url = copied_user["img_url"]
+    print(img_url)
+
+    return {'new_file': file.filename, 'new_img_url': img_url, 'msg': "new user image created."}
 
 @router.get("/get_user_credentials/", tags=["Users"], status_code=status.HTTP_201_CREATED)
 async def get_user_credentials(username: str) -> dict:
@@ -169,7 +176,7 @@ async def get_user_credentials(username: str) -> dict:
         'img_url': joined_data[0]['img_url'] if joined_data else ''        
     }
     
-    return user_data
+    return { "data": user_data }
 
 @router.get("/get_user_img/", tags=["Users"], status_code=status.HTTP_201_CREATED)
 async def get_user_img(username: str, request: Request) -> dict:
