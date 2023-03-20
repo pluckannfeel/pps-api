@@ -1,9 +1,16 @@
 from tortoise.contrib.fastapi import register_tortoise
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+db_uri = os.environ['DB_URI']
     
 def initialize_db(app):
     register_tortoise(
         app,
-        db_url='postgres://postgres:admin@localhost:5432/data',
+        # db_url='postgres://postgres:admin@localhost:5432/data',
+        db_url=db_uri,
         modules={
             'models': [
                 'models.user', 
